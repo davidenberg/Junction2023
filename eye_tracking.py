@@ -203,4 +203,22 @@ def analyze(frameSize=200, minDelta=400):
 # clean('./Driving/Participant_1/AFE_000_CONFIDENTIAL.json')
 # combine()
 # plot('./driving_participant1.json')
-analyze()
+def get_issue_areas(frameSize=200, minDelta=400, path = 'CWD'):
+  f1 = clean(path + '/AFE_000_CONFIDENTIAL.json')
+  f2 = clean(path + '/AFE_001_CONFIDENTIAL.json')
+  f3 = clean(path + '/AFE_002_CONFIDENTIAL.json')
+  f4 = clean(path + '/AFE_003_CONFIDENTIAL.json')
+  data = f1+f2+f3+f4
+
+  sensor_data = []
+  for i in data:
+    combined_sensor_data = []
+    for j in range(0,6):
+      combined_sensor_data.append(i[0]['m'][0][j])
+      combined_sensor_data.append(i[1]['m'][0][j])
+    sensor_data.append(combined_sensor_data)
+
+  sensor_delta = get_sensor_average_absolute_delta(sensor_data)
+
+  return group_continuous_integers(get_anomalies(sensor_delta, frameSize, minDelta))
+#analyze()

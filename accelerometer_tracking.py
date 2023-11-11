@@ -31,6 +31,20 @@ def load_data():
 
     return imu_data
 
+def load_data_by_path(path):
+    imu_data = pd.read_json(path + '/IMU_000_CONFIDENTIAL.json')
+    imu_data = pd.concat([imu_data, pd.read_json(path + '/IMU_001_CONFIDENTIAL.json')])
+    imu_data = pd.concat([imu_data, pd.read_json(path + '/IMU_002_CONFIDENTIAL.json')])
+    imu_data = pd.concat([imu_data, pd.read_json(path + '/IMU_003_CONFIDENTIAL.json')])
+
+    imu_data[['x', 'y', 'z','','','','']] =imu_data.v.tolist()
+    imu_data[['time', '', '','']] =imu_data.i.tolist()
+    imu_data['time_s'] = (imu_data['time'].values - imu_data['time'].iloc[0])* 10**-3
+    imu_data['y'] = imu_data['y']
+    imu_data.reset_index(inplace=True)
+
+    return imu_data
+
 def calculate_angles(data):
     processed_data = pd.DataFrame()
     processed_data['time'] = data['time_s']
@@ -73,13 +87,22 @@ def plot(data, problem_areas):
 
         # Add a legend
         plt.legend()
-    ani = animation.FuncAnimation(fig, animate, frames=data['time'][::10].index, repeat=True, interval=1)
-    #plt.show()
-    ani.save('animations/accelerometer.gif', writer='pillow')
+    ani = animation.FuncAnimation(fig, animate, frames=data['time'][1000:3000:10].index, repeat=True, interval=1)
+    plt.show()
+    #ani.save('animations/accelerometer.gif', writer='pillow')
 
-data = load_data()
-angle_data = calculate_angles(data)
-problems = track_sleep(angle_data) 
-problems = group_continuous_integers(problems)
-plot(angle_data, problems)
+def analysis():
+    data = load_data()
+    angle_data = calculate_angles(data)
+    problems = track_sleep(angle_data) 
+    problems = group_continuous_integers(problems)
+    plot(angle_data, problems)
+
+def export_problems(path):
+    data = load_data_by_path(path)
+    angle_data = calculate_angles(data)
+    problems = track_sleep(angle_data) 
+    return group_continuous_integers(problems)
+
+analysis()
 
