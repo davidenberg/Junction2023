@@ -32,7 +32,7 @@ def combine():
   out = open('./out.json', 'w')
   out.write(dataOut)
 
-def plot(data, anomalies = []):
+def plot(data, delta, anomalies = []):
    # Assuming data is your list of dictionaries
   # file = open(fileName, 'r')
 
@@ -52,18 +52,33 @@ def plot(data, anomalies = []):
   fig = plt.figure(figsize=(10, 5))
 
   # Plot the left eye movements
-  for index, sensor in enumerate(left):
-    plt.plot(ticktimes, sensor, label='Left Eye Sensor ' + str(index))
+  # for index, sensor in enumerate(left):
+  #   plt.plot(ticktimes, sensor, label='Left Eye Sensor ' + str(index))
 
-  for index, sensor in enumerate(right):
-    plt.plot(ticktimes, sensor, label='Right Eye Sensor ' + str(index))
+  # for index, sensor in enumerate(right):
+  #   plt.plot(ticktimes, sensor, label='Right Eye Sensor ' + str(index))
 
+  interval = 5*60
+  i = interval
+  averageOverInterval = []
+  averageTickTimes = []
+  while i < len(delta):
+    j = 0
+    average = 0
+    while j < interval:
+      average += delta[i-j]
+      j += 1
+    averageOverInterval.append(average/interval)
+    averageTickTimes.append(ticktimes[i])
+    i += interval
+
+  plt.plot(averageTickTimes, averageOverInterval, label='Average Eye Movement Delta Past 5s')
   for i in anomalies:
     s, e = i
     plt.axvspan(s, e, color='red', alpha=0.5, lw=0)
 
   # Add a legend
-  # plt.legend()
+  plt.legend()
 
   def animate(i):
     plt.clf()
@@ -81,7 +96,7 @@ def plot(data, anomalies = []):
     # Add a legend
     plt.legend()
 
-  ani = animation.FuncAnimation(fig, animate, frames=len(data), repeat=True, interval=1/500)
+  # ani = animation.FuncAnimation(fig, animate, frames=len(data), repeat=True, interval=1/500)
 
   # Show the plot
   plt.show()
@@ -111,18 +126,16 @@ def group_continuous_integers(arr):
 
   for num in arr[1:]:
     if num == end + 1:
-        end = num
+      end = num
     else:
-        ranges.append((start, end))
-        start = end = num
+      ranges.append((start, end))
+      start = end = num
 
   ranges.append((start, end))
   return ranges
 
 
-def get_anomalies(data, frameSize, minDelta):
-  delta = get_sensor_average_absolute_delta(data)
-
+def get_anomalies(delta, frameSize, minDelta):
   anomalies = []
   i=frameSize
   while i < len(delta):
@@ -155,9 +168,6 @@ def analyze(frameSize=200, minDelta=400):
   f3 = clean('./data/Driving/Participant_1/AFE_002_CONFIDENTIAL.json')
   f4 = clean('./data/Driving/Participant_1/AFE_003_CONFIDENTIAL.json')
   data = f1+f2+f3+f4
-  jsonOut = json.dumps(data)
-  out = open('./out.json', 'w')
-  out.write(jsonOut)
 
   sensor_data = []
   for i in data:
@@ -167,7 +177,9 @@ def analyze(frameSize=200, minDelta=400):
       combined_sensor_data.append(i[1]['m'][0][j])
     sensor_data.append(combined_sensor_data)
 
-  sensor_anomalies = group_continuous_integers(get_anomalies(sensor_data, frameSize, minDelta))
+  sensor_delta = get_sensor_average_absolute_delta(sensor_data)
+
+  sensor_anomalies = group_continuous_integers(get_anomalies(sensor_delta, frameSize, minDelta))
   # sensor_anomalies_right = get_anomalies(sensors_right, frameSize, minDelta)
 
   # common_subset = get_common_subset([
@@ -182,9 +194,10 @@ def analyze(frameSize=200, minDelta=400):
     if end-start < frameSize*0.99:
       continue
     anomalies.append(((data[start][0]['i'][0] - tickOffset)/1000, (data[end][0]['i'][0] - tickOffset)/1000))
-  plot(data, anomalies)
+
+  plot(data, sensor_delta, anomalies)
 
 # clean('./Driving/Participant_1/AFE_000_CONFIDENTIAL.json')
 # combine()
 # plot('./driving_participant1.json')
-#analyze()
+analyze()
