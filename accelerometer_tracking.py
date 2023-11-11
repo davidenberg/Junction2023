@@ -45,6 +45,17 @@ def load_data_by_path(path):
 
     return imu_data
 
+def load_single_datafile_by_path(path):
+    imu_data = pd.read_json(path)
+
+    imu_data[['x', 'y', 'z','','','','']] =imu_data.v.tolist()
+    imu_data[['time', '', '','']] =imu_data.i.tolist()
+    imu_data['time_s'] = (imu_data['time'].values - imu_data['time'].iloc[0])* 10**-3
+    imu_data['y'] = imu_data['y']
+    imu_data.reset_index(inplace=True)
+
+    return imu_data
+
 def calculate_angles(data):
     processed_data = pd.DataFrame()
     processed_data['time'] = data['time_s']
@@ -105,8 +116,21 @@ def analysis_by_path(path):
     problems = group_continuous_integers(problems)
     plot(angle_data, problems)
 
+def acc_analysis(path):
+    data = load_single_datafile_by_path(path)
+    angle_data = calculate_angles(data)
+    problems = track_sleep(angle_data)
+    problems = group_continuous_integers(problems)
+    plot(angle_data, problems)
+
 def export_problems(path):
     data = load_data_by_path(path)
+    angle_data = calculate_angles(data)
+    problems = track_sleep(angle_data) 
+    return group_continuous_integers(problems)
+
+def export_problems_standalone(path):
+    data = load_single_datafile_by_path(path)
     angle_data = calculate_angles(data)
     problems = track_sleep(angle_data) 
     return group_continuous_integers(problems)

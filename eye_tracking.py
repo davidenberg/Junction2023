@@ -234,6 +234,38 @@ def analyze_by_path(frameSize=200, minDelta=400, path='CWD'):
     anomalies.append(((data[start][0]['i'][0] - tickOffset)/1000, (data[end][0]['i'][0] - tickOffset)/1000))
 
   plot(data, sensor_delta, anomalies)
+
+def analyze_single_datafile_by_path(frameSize=200, minDelta=400, path='CWD'):
+  f1 = clean(path)
+  data = f1
+
+  sensor_data = []
+  for i in data:
+    combined_sensor_data = []
+    for j in range(0,6):
+      combined_sensor_data.append(i[0]['m'][0][j])
+      combined_sensor_data.append(i[1]['m'][0][j])
+    sensor_data.append(combined_sensor_data)
+
+  sensor_delta = get_sensor_average_absolute_delta(sensor_data)
+
+  sensor_anomalies = group_continuous_integers(get_anomalies(sensor_delta, frameSize, minDelta))
+  # sensor_anomalies_right = get_anomalies(sensors_right, frameSize, minDelta)
+
+  # common_subset = get_common_subset([
+  #   group_continuous_integers(sensor_anomalies_left),
+  #   group_continuous_integers(sensor_anomalies_right)
+  # ])
+
+  tickOffset = data[0][0]['i'][0]
+  anomalies = []
+  for i in sensor_anomalies:
+    start, end = i
+    if end-start < frameSize*0.99:
+      continue
+    anomalies.append(((data[start][0]['i'][0] - tickOffset)/1000, (data[end][0]['i'][0] - tickOffset)/1000))
+
+  plot(data, sensor_delta, anomalies)
 # clean('./Driving/Participant_1/AFE_000_CONFIDENTIAL.json')
 # combine()
 # plot('./driving_participant1.json')
@@ -256,5 +288,23 @@ def get_issue_areas(path, frameSize=200, minDelta=400):
 
   return group_continuous_integers(get_anomalies(sensor_delta, frameSize, minDelta))
 
+def get_issue_areas_standalone(path, frameSize=200, minDelta=400):
+  f1 = clean(path)
+  data = f1
+
+  sensor_data = []
+  for i in data:
+    combined_sensor_data = []
+    for j in range(0,6):
+      combined_sensor_data.append(i[0]['m'][0][j])
+      combined_sensor_data.append(i[1]['m'][0][j])
+    sensor_data.append(combined_sensor_data)
+
+  sensor_delta = get_sensor_average_absolute_delta(sensor_data)
+
+  return group_continuous_integers(get_anomalies(sensor_delta, frameSize, minDelta))
+
+def eye_analysis(path):
+  analyze_single_datafile_by_path(path=path)
 #analyze()
-analyze_by_path(path = 'data/driving_1')
+#analyze_by_path(path = 'data/driving_1')
