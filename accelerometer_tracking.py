@@ -98,11 +98,19 @@ def analysis():
     problems = group_continuous_integers(problems)
     plot(angle_data, problems)
 
+def analysis_by_path(path):
+    data = load_data_by_path(path)
+    angle_data = calculate_angles(data)
+    problems = track_sleep(angle_data) 
+    problems = group_continuous_integers(problems)
+    plot(angle_data, problems)
+
 def export_problems(path):
     data = load_data_by_path(path)
     angle_data = calculate_angles(data)
     problems = track_sleep(angle_data) 
     return group_continuous_integers(problems)
 
-analysis()
+#analysis()
+analysis_by_path('data/driving_1')
 
