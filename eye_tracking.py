@@ -3,6 +3,7 @@ import matplotlib.animation as animation
 import json
 import numpy
 
+
 def clean(fileName):
   # Assuming data is your list of dictionaries
   file = open(fileName, 'r')
@@ -29,11 +30,14 @@ def combine():
   f2= clean('./Driving/Participant_1/AFE_001_CONFIDENTIAL.json')
   f3 = clean('./Driving/Participant_1/AFE_002_CONFIDENTIAL.json')
   f4= clean('./Driving/Participant_1/AFE_003_CONFIDENTIAL.json')
-  dataOut = json.dumps(f1+f2+f3+f4)
+  dataOut = json.dumps(f1)
   out = open('./out.json', 'w')
   out.write(dataOut)
 
 def plot(data, delta, anomalies = []):
+  plt.rcParams['animation.ffmpeg_path'] = '/usr/bin/ffmpeg'
+  Writer = animation.writers['ffmpeg']
+  writer = Writer(fps=20, metadata=dict(artist='Me'), bitrate=1800)
    # Assuming data is your list of dictionaries
   # file = open(fileName, 'r')
 
@@ -84,6 +88,7 @@ def plot(data, delta, anomalies = []):
   def animate(i):
     plt.clf()
     # Plot the left eye movements
+<<<<<<< Updated upstream
     # for index, sensor in enumerate(left):
     #     plt.plot(ticktimes[:i], sensor[:i], label='Left Eye Sensor ' + str(index))
 
@@ -91,6 +96,13 @@ def plot(data, delta, anomalies = []):
     #   plt.plot(ticktimes[:i], sensor[:i], label='Right Eye Sensor ' + str(index))
 
     plt.plot(ticktimes[:i], delta[:i], label='Eye Movement')
+=======
+    for index, sensor in enumerate(left):
+        plt.plot(ticktimes[:i*100], sensor[:i*100], label='Left Eye Sensor ' + str(index))
+
+    for index, sensor in enumerate(right):
+      plt.plot(ticktimes[:i*100], sensor[:i*100], label='Right Eye Sensor ' + str(index))
+>>>>>>> Stashed changes
 
     for s, e in anomalies:
       if s < ticktimes[i]:
@@ -99,10 +111,15 @@ def plot(data, delta, anomalies = []):
     # Add a legend
     plt.legend()
 
+<<<<<<< Updated upstream
   ani = animation.FuncAnimation(fig, animate, frames=numpy.arange(0, len(delta))*2, repeat=True, interval=1)
+=======
+  ani = animation.FuncAnimation(fig, animate, frames=len(data)//100, repeat=False, interval=1)
+  ani.save("eye_movement.mp4", writer=writer)
+>>>>>>> Stashed changes
 
   # Show the plot
-  plt.show()
+  #plt.show()
 
 def get_sensor_average_absolute_delta(data):
   delta = []
@@ -170,7 +187,7 @@ def analyze(frameSize=200, minDelta=400):
   f2 = clean('./data/Driving/Participant_1/AFE_001_CONFIDENTIAL.json')
   f3 = clean('./data/Driving/Participant_1/AFE_002_CONFIDENTIAL.json')
   f4 = clean('./data/Driving/Participant_1/AFE_003_CONFIDENTIAL.json')
-  data = f1+f2+f3+f4
+  data = f1
 
   sensor_data = []
   for i in data:
