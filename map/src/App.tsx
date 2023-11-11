@@ -82,7 +82,15 @@ export default function App() {
       controller={true}
       layers={layers}
     >
-      <div style={{ position: 'absolute', right: 0, width: '10%', backgroundColor: 'rgba(0,0,0,0.6)', color: 'white', padding: '1rem' }}>
+      <div style={{
+        position: 'absolute',
+        right: 0,
+        width: '10%',
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        color: 'white',
+        padding: '1rem',
+        minWidth: '12em'
+      }}>
         <div>
           <input type="radio" id='participant1' name="layer" onChange={() => setSelectedLayer('route0')} defaultChecked />
           <label htmlFor="participant1">Participant 1</label>
@@ -115,7 +123,9 @@ export default function App() {
           backgroundColor: 'rgba(0,0,0,0.8)',
           color: 'white',
           padding: '0.5em',
-          textAlign: 'center'
+          textAlign: 'center',
+          minWidth: '13rem',
+          minHeight: '16rem'
         }}>
           <h2>Driver Score</h2>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
