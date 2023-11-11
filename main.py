@@ -35,4 +35,5 @@ def main():
 
     draw_map_standalone(mapname, sys.argv[1], sys.argv[2], save_map)
 
-main()
+if __name__ == "__main__":
+    main()

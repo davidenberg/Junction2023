@@ -5,6 +5,8 @@ import matplotlib.animation as animation
 import math
 from eye_tracking import group_continuous_integers
 
+# identify the areas were the pitch or roll is > n degrees for a number of ticks,
+# this might indicate that the user slumbers
 def track_sleep(data):
     timer = 0
     problem_areas = []
@@ -17,20 +19,7 @@ def track_sleep(data):
             timer = 0
     return problem_areas
 
-def load_data():
-    imu_data = pd.read_json('data/driving_1/IMU_000_CONFIDENTIAL.json')
-    imu_data = pd.concat([imu_data, pd.read_json('data/driving_1/IMU_001_CONFIDENTIAL.json')])
-    imu_data = pd.concat([imu_data, pd.read_json('data/driving_1/IMU_002_CONFIDENTIAL.json')])
-    imu_data = pd.concat([imu_data, pd.read_json('data/driving_1/IMU_003_CONFIDENTIAL.json')])
-
-    imu_data[['x', 'y', 'z','','','','']] =imu_data.v.tolist()
-    imu_data[['time', '', '','']] =imu_data.i.tolist()
-    imu_data['time_s'] = (imu_data['time'].values - imu_data['time'].iloc[0])* 10**-3
-    imu_data['y'] = imu_data['y']
-    imu_data.reset_index(inplace=True)
-
-    return imu_data
-
+# load data from directory specified by path, but has the expected structure
 def load_data_by_path(path):
     imu_data = pd.read_json(path + '/IMU_000_CONFIDENTIAL.json')
     imu_data = pd.concat([imu_data, pd.read_json(path + '/IMU_001_CONFIDENTIAL.json')])
@@ -45,6 +34,7 @@ def load_data_by_path(path):
 
     return imu_data
 
+# load file located 
 def load_single_datafile_by_path(path):
     imu_data = pd.read_json(path)
 
@@ -56,6 +46,7 @@ def load_single_datafile_by_path(path):
 
     return imu_data
 
+# transform accelerometer data to angel of rotations, pitch and roll 
 def calculate_angles(data):
     processed_data = pd.DataFrame()
     processed_data['time'] = data['time_s']
@@ -65,6 +56,7 @@ def calculate_angles(data):
 
     return processed_data
 
+# create a animated plot of the data, highlightin areas were a potential issue was detected
 def plot(data, problem_areas):
     fig = plt.figure(figsize=(10, 5))
 
@@ -100,15 +92,9 @@ def plot(data, problem_areas):
         plt.legend()
     ani = animation.FuncAnimation(fig, animate, frames=data['time'][1000:3000:10].index, repeat=True, interval=1)
     plt.show()
-    #ani.save('animations/accelerometer.gif', writer='pillow')
 
-def analysis():
-    data = load_data()
-    angle_data = calculate_angles(data)
-    problems = track_sleep(angle_data) 
-    problems = group_continuous_integers(problems)
-    plot(angle_data, problems)
 
+# analyse data following example data structure located in directory defined by path
 def analysis_by_path(path):
     data = load_data_by_path(path)
     angle_data = calculate_angles(data)
@@ -116,6 +102,7 @@ def analysis_by_path(path):
     problems = group_continuous_integers(problems)
     plot(angle_data, problems)
 
+# analyse a single datafile located by path
 def acc_analysis(path):
     data = load_single_datafile_by_path(path)
     angle_data = calculate_angles(data)
@@ -123,12 +110,14 @@ def acc_analysis(path):
     problems = group_continuous_integers(problems)
     plot(angle_data, problems)
 
+# export the locations were potential issues were detected, used to visualize data from drive
 def export_problems(path):
     data = load_data_by_path(path)
     angle_data = calculate_angles(data)
     problems = track_sleep(angle_data) 
     return group_continuous_integers(problems)
 
+# same as export_problems(), but only analyses one datafile
 def export_problems_standalone(path):
     data = load_single_datafile_by_path(path)
     angle_data = calculate_angles(data)
