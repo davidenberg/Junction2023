@@ -57,8 +57,8 @@ def plot(data, problem_areas):
 
         plt.clf()
 
-        plt.plot(data['time'].values, data['pitch'].values, label='Pitch')
-        plt.plot(data['time'].values, data['roll'].values, label='Roll')
+        plt.plot(data['time'].values[:i], data['pitch'].values[:i], label='Pitch')
+        plt.plot(data['time'].values[:i], data['roll'].values[:i], label='Roll')
 
         for s, e in problem_areas:
             if data['time'][s] < data['time'][i]:
@@ -66,7 +66,7 @@ def plot(data, problem_areas):
 
         # Add a legend
         plt.legend()
-    ani = animation.FuncAnimation(fig, animate, frames=len(data), repeat=True, interval=1/500)
+    ani = animation.FuncAnimation(fig, animate, frames=len(data['time'].values), repeat=True, interval=1/500)
     plt.show()
 
 data = load_data()
