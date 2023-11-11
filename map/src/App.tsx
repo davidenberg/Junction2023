@@ -24,7 +24,7 @@ type Route = {
 
 export default function App() {
   const [selectedRoute, setSelectedRoute] = useState('route0');
-  const [warningsVisible, setWarningsVisible] = useState(false);
+  const [warningsVisible, setWarningsVisible] = useState(true);
   const paths = [(route1 as Route).path, (route2 as Route).path, (route3 as Route).path];
   const warnings = [(route1 as Route).warnings, (route2 as Route).warnings, (route3 as Route).warnings];
   const layers = [
@@ -58,7 +58,7 @@ export default function App() {
       controller={true}
       layers={layers}
     >
-      <div style={{ position: 'absolute', width: '10%', backgroundColor: 'black', color: 'white' }}>
+      <div style={{ position: 'absolute', right: 0, width: '10%', backgroundColor: 'rgba(0,0,0,0.8)', color: 'white', padding: '0.5em' }}>
         <div>
           <input type="radio" id='participant1' name="layer" onChange={() => setSelectedRoute('route0')} defaultChecked />
           <label htmlFor="participant1">Participant 1</label>
@@ -79,7 +79,6 @@ export default function App() {
       </div>
       <Map
         mapLib={import('mapbox-gl')}
-        style={{ width: 600, height: 400 }}
         mapStyle="mapbox://styles/mapbox/dark-v11"
         mapboxAccessToken='pk.eyJ1Ijoiam9oYW5uZXNwZWx0b2xhMiIsImEiOiJjbG91Mmxnb3kwZjYyMmtsOWxhMnRwbzFmIn0.yI81GPmuDaTjnbdhanni5g'
       />;
