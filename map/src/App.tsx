@@ -57,7 +57,6 @@ export default function App() {
       id: 'heatmapLayer',
       data: heatmapData,
       getPosition: (d) => [d.longitude, d.latitude],
-      // getWeight: (d) => heatmapData.filter((e) => e.latitude.toFixed(3) === d.latitude.toFixed(3) && e.longitude.toFixed(3) === d.longitude.toFixed(3)).length,
       aggregation: 'SUM',
       visible: selectedLayer === 'heatmap'
     })
