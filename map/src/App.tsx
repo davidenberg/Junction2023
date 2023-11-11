@@ -11,7 +11,6 @@ const INITIAL_VIEW_STATE = {
 };
 
 export default function App() {
-  console.log(route.warnings.map((e) => e.map((i) => [i.longitude, i.latitude])))
   const layers = [
     new PathLayer({
       id: 'path-layer',
