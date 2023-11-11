@@ -1,8 +1,8 @@
 import Map from 'react-map-gl';
 import DeckGL, { PathLayer } from 'deck.gl/typed';
-import route1 from './route1.json';
-import route2 from './route2.json';
-import route3 from './route3.json';
+import route0 from './route1.json';
+import route1 from './route2.json';
+import route2 from './route3.json';
 import { useState } from 'react';
 
 const INITIAL_VIEW_STATE = {
@@ -22,11 +22,13 @@ type Route = {
   warnings: LatLng[][]
 }
 
+type Routes = 'route0' | 'route1' | 'route2';
+
 export default function App() {
-  const [selectedRoute, setSelectedRoute] = useState('route0');
+  const [selectedRoute, setSelectedRoute] = useState<Routes>('route0');
   const [warningsVisible, setWarningsVisible] = useState(true);
-  const paths = [(route1 as Route).path, (route2 as Route).path, (route3 as Route).path];
-  const warnings = [(route1 as Route).warnings, (route2 as Route).warnings, (route3 as Route).warnings];
+  const paths = [(route0 as Route).path, (route1 as Route).path, (route2 as Route).path];
+  const warnings = [(route0 as Route).warnings, (route1 as Route).warnings, (route2 as Route).warnings];
   const layers = [
     paths.map((route, i) => new PathLayer({
       id: 'path-layer' + i,
@@ -52,6 +54,20 @@ export default function App() {
     }))
   ];
 
+  const routes: { [key: string]: Route } = {
+    route0: route0 as Route,
+    route1: route1 as Route,
+    route2: route2 as Route
+  }
+
+  function getDriverScore() {
+    const route = routes[selectedRoute];
+    const pathLength = route.path.length;
+    const warningsLength = route.warnings.reduce((prev, curr) => prev + curr.length, 0);
+    const score = (1 - warningsLength / pathLength) * 100;
+    return <p style={{ fontSize: '5rem', marginTop: 0 }}>{score.toFixed(2)}<p style={{ fontSize: '2rem', margin: 0 }}>/100</p></p>
+  }
+
   return (
     <DeckGL
       initialViewState={INITIAL_VIEW_STATE}
@@ -75,6 +91,22 @@ export default function App() {
         <div>
           <input type="checkbox" id='warnings' defaultChecked onChange={() => setWarningsVisible(!warningsVisible)} />
           <label htmlFor="participant3">Warnings visible</label>
+        </div>
+      </div>
+      <div style={{
+        position: 'absolute',
+        right: 0,
+        top: '35%',
+        width: '15%',
+        height: '25%',
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        color: 'white',
+        padding: '0.5em',
+        textAlign: 'center'
+      }}>
+        <h2>Driver Score</h2>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+          {getDriverScore()}
         </div>
       </div>
       <Map
