@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import json
+import numpy
 
 def clean(fileName):
   # Assuming data is your list of dictionaries
@@ -58,21 +59,21 @@ def plot(data, delta, anomalies = []):
   # for index, sensor in enumerate(right):
   #   plt.plot(ticktimes, sensor, label='Right Eye Sensor ' + str(index))
 
-  interval = 5*60
-  i = interval
-  averageOverInterval = []
-  averageTickTimes = []
-  while i < len(delta):
-    j = 0
-    average = 0
-    while j < interval:
-      average += delta[i-j]
-      j += 1
-    averageOverInterval.append(average/interval)
-    averageTickTimes.append(ticktimes[i])
-    i += interval
+  # interval = 5*60
+  # i = interval
+  # averageOverInterval = []
+  # averageTickTimes = []
+  # while i < len(delta):
+  #   j = 0
+  #   average = 0
+  #   while j < interval:
+  #     average += delta[i-j]
+  #     j += 1
+  #   averageOverInterval.append(average/interval)
+  #   averageTickTimes.append(ticktimes[i])
+  #   i += interval
 
-  plt.plot(averageTickTimes, averageOverInterval, label='Average Eye Movement Delta Past 5s')
+  # plt.plot(averageTickTimes, averageOverInterval, label='Average Eye Movement Delta Past 5s')
   for i in anomalies:
     s, e = i
     plt.axvspan(s, e, color='red', alpha=0.5, lw=0)
@@ -83,11 +84,13 @@ def plot(data, delta, anomalies = []):
   def animate(i):
     plt.clf()
     # Plot the left eye movements
-    for index, sensor in enumerate(left):
-        plt.plot(ticktimes[:i], sensor[:i], label='Left Eye Sensor ' + str(index))
+    # for index, sensor in enumerate(left):
+    #     plt.plot(ticktimes[:i], sensor[:i], label='Left Eye Sensor ' + str(index))
 
-    for index, sensor in enumerate(right):
-      plt.plot(ticktimes[:i], sensor[:i], label='Right Eye Sensor ' + str(index))
+    # for index, sensor in enumerate(right):
+    #   plt.plot(ticktimes[:i], sensor[:i], label='Right Eye Sensor ' + str(index))
+
+    plt.plot(ticktimes[:i], delta[:i], label='Eye Movement')
 
     for s, e in anomalies:
       if s < ticktimes[i]:
@@ -96,7 +99,7 @@ def plot(data, delta, anomalies = []):
     # Add a legend
     plt.legend()
 
-  # ani = animation.FuncAnimation(fig, animate, frames=len(data), repeat=True, interval=1/500)
+  ani = animation.FuncAnimation(fig, animate, frames=numpy.arange(0, len(delta))*2, repeat=True, interval=1)
 
   # Show the plot
   plt.show()
