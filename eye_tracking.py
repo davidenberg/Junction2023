@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 import json
 
 def clean(fileName):
@@ -41,41 +42,63 @@ def plot(data, anomalies = []):
   left = []
   for i in range(0,6):
     left.append([d[0]['m'][0][i] for d in data])
-  left_ticktimes = [(d[0]['i'][0] - data[0][0]['i'][0])/1000 for d in data]
+  ticktimes = [(d[0]['i'][0] - data[0][0]['i'][0])/1000 for d in data]
   
   right = []
   for i in range(0,6):
     right.append([d[1]['m'][0][i] for d in data])
-  right_ticktimes = [(d[1]['i'][0] - data[0][1]['i'][0])/1000 for d in data]
 
   # Create the plot
-  plt.figure(figsize=(10, 5))
+  fig = plt.figure(figsize=(10, 5))
 
   # Plot the left eye movements
   for index, sensor in enumerate(left):
-    plt.plot(left_ticktimes, sensor, label='Left Eye Sensor ' + str(index))
+    plt.plot(ticktimes, sensor, label='Left Eye Sensor ' + str(index))
 
   for index, sensor in enumerate(right):
-    plt.plot(right_ticktimes, sensor, label='Right Eye Sensor ' + str(index))
+    plt.plot(ticktimes, sensor, label='Right Eye Sensor ' + str(index))
 
   for i in anomalies:
     s, e = i
     plt.axvspan(s, e, color='red', alpha=0.5, lw=0)
 
   # Add a legend
-  plt.legend()
+  # plt.legend()
+
+  def animate(i):
+    plt.clf()
+    # Plot the left eye movements
+    for index, sensor in enumerate(left):
+        plt.plot(ticktimes[:i], sensor[:i], label='Left Eye Sensor ' + str(index))
+
+    for index, sensor in enumerate(right):
+      plt.plot(ticktimes[:i], sensor[:i], label='Right Eye Sensor ' + str(index))
+
+    for s, e in anomalies:
+      if s < ticktimes[i]:
+        plt.axvspan(s, min(e, ticktimes[i]), color='red', alpha=0.5, lw=0)
+
+    # Add a legend
+    plt.legend()
+
+  ani = animation.FuncAnimation(fig, animate, frames=len(data), repeat=True, interval=1/500)
 
   # Show the plot
   plt.show()
 
-def normalize(data):
+def get_sensor_average_absolute_delta(data):
   delta = []
+  prev = None
   for index, curr in enumerate(data):
     if index == 0:
+      prev = curr
       delta.append(0)
     else:
-      prev = data[index-1]
-      delta.append(curr-prev)  
+      deltaSum = 0
+      for j in range(len(curr)):
+        deltaSum += abs(curr[j]-prev[j])
+      delta.append(deltaSum/len(curr))
+      prev = curr
   return delta
 
 def group_continuous_integers(arr):
@@ -98,7 +121,7 @@ def group_continuous_integers(arr):
 
 
 def get_anomalies(data, frameSize, minDelta):
-  delta = normalize(data)
+  delta = get_sensor_average_absolute_delta(data)
 
   anomalies = []
   i=frameSize
@@ -109,7 +132,7 @@ def get_anomalies(data, frameSize, minDelta):
       if abs(delta[i-j]) > minDelta:
         outliers += 1
       j += 1
-    if outliers < frameSize*0.01:
+    if outliers < frameSize*0.005:
       anomalies.append(i)
     i += 1
   return anomalies
@@ -126,31 +149,40 @@ def get_common_subset(set_array):
     common_subset = new_common_subset
   return common_subset
 
-def analyze(frameSize=125, minDelta=500):
-  f1 = clean('./Driving/Participant_1/AFE_000_CONFIDENTIAL.json')
-  f2 = clean('./Driving/Participant_1/AFE_001_CONFIDENTIAL.json')
-  f3 = clean('./Driving/Participant_1/AFE_002_CONFIDENTIAL.json')
-  f4 = clean('./Driving/Participant_1/AFE_003_CONFIDENTIAL.json')
+def analyze(frameSize=200, minDelta=400):
+  f1 = clean('./data/Driving/Participant_1/AFE_000_CONFIDENTIAL.json')
+  f2 = clean('./data/Driving/Participant_1/AFE_001_CONFIDENTIAL.json')
+  f3 = clean('./data/Driving/Participant_1/AFE_002_CONFIDENTIAL.json')
+  f4 = clean('./data/Driving/Participant_1/AFE_003_CONFIDENTIAL.json')
   data = f1+f2+f3+f4
-  anomalies = []
-  for i in range(0,6):
-    sensor_left = [d[0]['m'][0][i] for d in data]
-    sensor_right = [d[1]['m'][0][i] for d in data]
-    sensor_anomalies_left = get_anomalies(sensor_left, frameSize, minDelta)
-    sensor_anomalies_right = get_anomalies(sensor_right, frameSize, minDelta)
-    anomalies.append(group_continuous_integers(sensor_anomalies_left))
-    anomalies.append(group_continuous_integers(sensor_anomalies_right))
+  jsonOut = json.dumps(data)
+  out = open('./out.json', 'w')
+  out.write(jsonOut)
 
-  common_subset = get_common_subset(anomalies)
+  sensor_data = []
+  for i in data:
+    combined_sensor_data = []
+    for j in range(0,6):
+      combined_sensor_data.append(i[0]['m'][0][j])
+      combined_sensor_data.append(i[1]['m'][0][j])
+    sensor_data.append(combined_sensor_data)
+
+  sensor_anomalies = group_continuous_integers(get_anomalies(sensor_data, frameSize, minDelta))
+  # sensor_anomalies_right = get_anomalies(sensors_right, frameSize, minDelta)
+
+  # common_subset = get_common_subset([
+  #   group_continuous_integers(sensor_anomalies_left),
+  #   group_continuous_integers(sensor_anomalies_right)
+  # ])
 
   tickOffset = data[0][0]['i'][0]
-  plotData = []
-  for i in common_subset:
+  anomalies = []
+  for i in sensor_anomalies:
     start, end = i
-    if end-start < frameSize:
-       continue
-    plotData.append(((data[start][0]['i'][0] - tickOffset)/1000, (data[end][0]['i'][0] - tickOffset)/1000))
-  plot(data, plotData)
+    if end-start < frameSize*0.99:
+      continue
+    anomalies.append(((data[start][0]['i'][0] - tickOffset)/1000, (data[end][0]['i'][0] - tickOffset)/1000))
+  plot(data, anomalies)
 
 # clean('./Driving/Participant_1/AFE_000_CONFIDENTIAL.json')
 # combine()
