@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 import math
 from eye_tracking import group_continuous_integers
 
@@ -40,6 +41,8 @@ def calculate_angles(data):
     return processed_data
 
 def plot(data, problem_areas):
+    fig = plt.figure(figsize=(10, 5))
+
     plt.plot(data['time'].values, data['pitch'].values, label='Pitch')
     plt.plot(data['time'].values, data['roll'].values, label='Roll')
     for i in problem_areas:
@@ -49,6 +52,21 @@ def plot(data, problem_areas):
     plt.legend()
     plt.ylabel('Angle')
     plt.xlabel('Time (s)')
+    
+    def animate(i):
+
+        plt.clf()
+
+        plt.plot(data['time'].values, data['pitch'].values, label='Pitch')
+        plt.plot(data['time'].values, data['roll'].values, label='Roll')
+
+        for s, e in problem_areas:
+            if data['time'][s] < data['time'][i]:
+                plt.axvspan(data['time'][s], min(data['time'][e], data['time'][i]), color = 'red', alpha=0.5, lw=1)
+
+        # Add a legend
+        plt.legend()
+    ani = animation.FuncAnimation(fig, animate, frames=len(data), repeat=True, interval=1/500)
     plt.show()
 
 data = load_data()
