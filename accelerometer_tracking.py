@@ -112,5 +112,5 @@ def export_problems(path):
     return group_continuous_integers(problems)
 
 #analysis()
-analysis_by_path('data/driving_1')
+#analysis_by_path('data/driving_1')
 

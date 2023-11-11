@@ -90,16 +90,16 @@ def plot(data, delta, anomalies = []):
     # for index, sensor in enumerate(right):
     #   plt.plot(ticktimes[:i], sensor[:i], label='Right Eye Sensor ' + str(index))
 
-    plt.plot(ticktimes[:i], delta[:i], label='Eye Movement')
+    plt.plot(ticktimes[i:i+1000], delta[i:i+1000], label='Eye Movement')
 
     for s, e in anomalies:
-      if s < ticktimes[i]:
-        plt.axvspan(s, min(e, ticktimes[i]), color='red', alpha=0.5, lw=0)
+      if s < ticktimes[i+1000] and s > ticktimes[i]:
+        plt.axvspan(s, min(e, ticktimes[i + 1000]), color='red', alpha=0.5, lw=0)
 
     # Add a legend
     plt.legend()
 
-  ani = animation.FuncAnimation(fig, animate, frames=numpy.arange(0, len(delta))*2, repeat=True, interval=1)
+  ani = animation.FuncAnimation(fig, animate, frames=numpy.arange(0, len(delta), 10), repeat=True, interval=1)
 
   # Show the plot
   plt.show()
@@ -166,10 +166,10 @@ def get_common_subset(set_array):
   return common_subset
 
 def analyze(frameSize=200, minDelta=400):
-  f1 = clean('./data/Driving/Participant_1/AFE_000_CONFIDENTIAL.json')
-  f2 = clean('./data/Driving/Participant_1/AFE_001_CONFIDENTIAL.json')
-  f3 = clean('./data/Driving/Participant_1/AFE_002_CONFIDENTIAL.json')
-  f4 = clean('./data/Driving/Participant_1/AFE_003_CONFIDENTIAL.json')
+  f1 = clean('./data/driving_1/AFE_000_CONFIDENTIAL.json')
+  f2 = clean('./data/driving_1/AFE_001_CONFIDENTIAL.json')
+  f3 = clean('./data/driving_1/AFE_002_CONFIDENTIAL.json')
+  f4 = clean('./data/driving_1/AFE_003_CONFIDENTIAL.json')
   data = f1+f2+f3+f4
 
   sensor_data = []
@@ -200,10 +200,44 @@ def analyze(frameSize=200, minDelta=400):
 
   plot(data, sensor_delta, anomalies)
 
+def analyze_by_path(frameSize=200, minDelta=400, path='CWD'):
+  f1 = clean(path + '/AFE_000_CONFIDENTIAL.json')
+  f2 = clean(path + '/AFE_001_CONFIDENTIAL.json')
+  f3 = clean(path + '/AFE_002_CONFIDENTIAL.json')
+  f4 = clean(path + '/AFE_003_CONFIDENTIAL.json')
+  data = f1+f2+f3+f4
+
+  sensor_data = []
+  for i in data:
+    combined_sensor_data = []
+    for j in range(0,6):
+      combined_sensor_data.append(i[0]['m'][0][j])
+      combined_sensor_data.append(i[1]['m'][0][j])
+    sensor_data.append(combined_sensor_data)
+
+  sensor_delta = get_sensor_average_absolute_delta(sensor_data)
+
+  sensor_anomalies = group_continuous_integers(get_anomalies(sensor_delta, frameSize, minDelta))
+  # sensor_anomalies_right = get_anomalies(sensors_right, frameSize, minDelta)
+
+  # common_subset = get_common_subset([
+  #   group_continuous_integers(sensor_anomalies_left),
+  #   group_continuous_integers(sensor_anomalies_right)
+  # ])
+
+  tickOffset = data[0][0]['i'][0]
+  anomalies = []
+  for i in sensor_anomalies:
+    start, end = i
+    if end-start < frameSize*0.99:
+      continue
+    anomalies.append(((data[start][0]['i'][0] - tickOffset)/1000, (data[end][0]['i'][0] - tickOffset)/1000))
+
+  plot(data, sensor_delta, anomalies)
 # clean('./Driving/Participant_1/AFE_000_CONFIDENTIAL.json')
 # combine()
 # plot('./driving_participant1.json')
-def get_issue_areas(frameSize=200, minDelta=400, path = 'CWD'):
+def get_issue_areas(path, frameSize=200, minDelta=400):
   f1 = clean(path + '/AFE_000_CONFIDENTIAL.json')
   f2 = clean(path + '/AFE_001_CONFIDENTIAL.json')
   f3 = clean(path + '/AFE_002_CONFIDENTIAL.json')
@@ -221,4 +255,6 @@ def get_issue_areas(frameSize=200, minDelta=400, path = 'CWD'):
   sensor_delta = get_sensor_average_absolute_delta(sensor_data)
 
   return group_continuous_integers(get_anomalies(sensor_delta, frameSize, minDelta))
+
 #analyze()
+analyze_by_path(path = 'data/driving_1')
