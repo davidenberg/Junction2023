@@ -1,6 +1,6 @@
 # Junction 2023 Pixieray: Peek behind the eyes
 
-## BlinkBonanza: Blink and you won't miss it.
+## Driving Change: In the Blink for Safety
 
 ## Description
 Distracted and fatigued driving poses widespread risks, impacting both individuals and society​.
