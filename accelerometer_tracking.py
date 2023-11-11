@@ -56,18 +56,26 @@ def plot(data, problem_areas):
     def animate(i):
 
         plt.clf()
+        if (i + 1000 < data['time'].size):
+            plt.plot(data['time'].values[i:i+1000], data['pitch'].values[i:i+1000], label='Pitch')
+            plt.plot(data['time'].values[i:i+1000], data['roll'].values[i:i+1000], label='Roll')
 
-        plt.plot(data['time'].values[:i], data['pitch'].values[:i], label='Pitch')
-        plt.plot(data['time'].values[:i], data['roll'].values[:i], label='Roll')
+            for s, e in problem_areas:
+                if data['time'][s] < data['time'][i+1000] and data['time'][s] > data['time'][i] :
+                    plt.axvspan(data['time'][s], min(data['time'][e], data['time'][i + 1000]), color = 'red', alpha=0.5, lw=1)
+        else:
+            plt.plot(data['time'].values[i:], data['pitch'].values[i:], label='Pitch')
+            plt.plot(data['time'].values[i:], data['roll'].values[i:], label='Roll')
 
-        for s, e in problem_areas:
-            if data['time'][s] < data['time'][i]:
-                plt.axvspan(data['time'][s], min(data['time'][e], data['time'][i]), color = 'red', alpha=0.5, lw=1)
+            for s, e in problem_areas:
+                if data['time'][s] < data['time'].iloc[-1] and data['time'][s] > data['time'][i] :
+                    plt.axvspan(data['time'][s], min(data['time'][e], data['time'].iloc[-1]), color = 'red', alpha=0.5, lw=1)
 
         # Add a legend
         plt.legend()
-    ani = animation.FuncAnimation(fig, animate, frames=len(data['time'].values), repeat=True, interval=1/500)
-    plt.show()
+    ani = animation.FuncAnimation(fig, animate, frames=data['time'][::10].index, repeat=True, interval=1)
+    #plt.show()
+    ani.save('animations/accelerometer.gif', writer='pillow')
 
 data = load_data()
 angle_data = calculate_angles(data)
