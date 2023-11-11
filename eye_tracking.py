@@ -187,4 +187,4 @@ def analyze(frameSize=200, minDelta=400):
 # clean('./Driving/Participant_1/AFE_000_CONFIDENTIAL.json')
 # combine()
 # plot('./driving_participant1.json')
-analyze()
+#analyze()
