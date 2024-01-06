@@ -2,6 +2,12 @@
 
 ## Driving Change: In the Blink for Safety
 
+Post-Junciton notes:
+This project was selected as the top project from 250 competing teams. In this repository
+you can find the code used for data processing and visualisations, however you are not able
+to test it in real time as the data format used is proprietary, and due to our agreement
+during the event we are not able to share the data.
+
 ## Description
 Distracted and fatigued driving poses widespread risks, impacting both individuals and society​.
 This problem significantly impacts societal safety and well-being on a large scale​.
