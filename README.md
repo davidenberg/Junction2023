@@ -17,6 +17,7 @@ Anticipated outcomes: a potential 24% reduction in annual crashes, especially am
 ## Visuals
 
 [Live demo of post drive data interpretation](https://blinkbonanza.06ebee69-0772-4b23-a839-3a48c3de5bf9.fi-hel2.upcloudobjects.com/index.html)\
+[![Video demonstration](https://img.youtube.com/vi/KfsboH4Km9o/0.jpg)](https://www.youtube.com/watch?v=KfsboH4Km9o)\
 Post drive map:\
 ![alt text](images/drive_example.png)
 \
